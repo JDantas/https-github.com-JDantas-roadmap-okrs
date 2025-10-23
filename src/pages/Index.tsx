@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { Loader2, CheckCircle, XCircle, ArrowRight } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Loader2, CheckCircle, XCircle } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,6 +22,8 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { cn } from '@/lib/utils'
+import { useProjectStore } from '@/stores/useProjectStore'
+import { ProjectDashboard } from '@/components/ProjectDashboard'
 
 const githubUrlRegex =
   /^(https?:\/\/)?(www\.)?github\.com\/[a-zA-Z0-9-]+\/[a-zA-Z0-9-._]+(\.git)?\/?$/
@@ -39,7 +40,11 @@ const formSchema = z.object({
 
 type Status = 'idle' | 'loading' | 'success' | 'error'
 
-const Index = () => {
+const ImportForm = ({
+  onImportSuccess,
+}: {
+  onImportSuccess: (url: string) => void
+}) => {
   const [status, setStatus] = useState<Status>('idle')
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -50,12 +55,14 @@ const Index = () => {
     mode: 'onChange',
   })
 
-  const onSubmit = async () => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setStatus('loading')
     await new Promise((resolve) => setTimeout(resolve, 2500))
 
     if (Math.random() > 0.2) {
       setStatus('success')
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      onImportSuccess(values.repoUrl)
     } else {
       setStatus('error')
     }
@@ -92,7 +99,7 @@ const Index = () => {
         bgColor = 'bg-success/10'
         textColor = 'text-success-foreground'
         Icon = () => <CheckCircle className="h-5 w-5" />
-        message = 'Repositório importado com sucesso!'
+        message = 'Repositório importado com sucesso! Redirecionando...'
         break
       }
       case 'error': {
@@ -117,24 +124,12 @@ const Index = () => {
           <Icon />
           <p className="text-sm font-medium">{message}</p>
         </div>
-        {status === 'success' && (
-          <Button asChild className="w-full">
-            <Link
-              to={`/project?repoUrl=${encodeURIComponent(
-                form.getValues('repoUrl'),
-              )}`}
-            >
-              Abrir Projeto
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-        )}
       </div>
     )
   }
 
   return (
-    <Card className="w-full max-w-[600px] my-8 shadow-pronounced rounded-lg w-[90%] md:w-full">
+    <Card className="w-full max-w-[600px] my-8 shadow-pronounced rounded-lg w-[90%] md:w-full animate-fade-in-up">
       <CardHeader className="text-center px-6 pt-8 md:px-8 md:pt-10">
         <CardTitle className="text-2xl md:text-3xl font-bold">
           Novo Projeto
@@ -184,6 +179,18 @@ const Index = () => {
       </CardContent>
     </Card>
   )
+}
+
+const Index = () => {
+  const { projectUrl, setProjectUrl, clearProjectUrl } = useProjectStore()
+
+  if (projectUrl) {
+    return (
+      <ProjectDashboard repoUrl={projectUrl} onClearProject={clearProjectUrl} />
+    )
+  }
+
+  return <ImportForm onImportSuccess={setProjectUrl} />
 }
 
 export default Index

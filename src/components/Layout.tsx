@@ -14,7 +14,7 @@ export default function Layout() {
       </main>
 
       <footer className="w-full text-center p-4 text-muted-foreground text-sm">
-        © 2023
+        © 2025
       </footer>
     </div>
   )

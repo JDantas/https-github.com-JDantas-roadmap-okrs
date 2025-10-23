@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { Loader2, CheckCircle, XCircle } from 'lucide-react'
+import { Loader2, CheckCircle, XCircle, ArrowRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -44,7 +45,7 @@ const Index = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      repoUrl: '',
+      repoUrl: 'https://github.com/shadcn-ui/ui',
     },
     mode: 'onChange',
   })
@@ -105,15 +106,29 @@ const Index = () => {
     }
 
     return (
-      <div
-        className={cn(
-          'mt-6 p-4 rounded-md flex items-center gap-3 animate-fade-in-up',
-          bgColor,
-          textColor,
+      <div className="mt-6 space-y-4 animate-fade-in-up">
+        <div
+          className={cn(
+            'p-4 rounded-md flex items-center gap-3',
+            bgColor,
+            textColor,
+          )}
+        >
+          <Icon />
+          <p className="text-sm font-medium">{message}</p>
+        </div>
+        {status === 'success' && (
+          <Button asChild className="w-full">
+            <Link
+              to={`/project?repoUrl=${encodeURIComponent(
+                form.getValues('repoUrl'),
+              )}`}
+            >
+              Abrir Projeto
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
         )}
-      >
-        <Icon />
-        <p className="text-sm font-medium">{message}</p>
       </div>
     )
   }
